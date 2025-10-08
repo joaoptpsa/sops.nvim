@@ -99,10 +99,12 @@ local function sops_encrypt_buffer(bufnr, is_autocmd)
           vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(out.stdout, "\n", { plain = true }))
       end
 
-      -- Run BufReadPost autocmds since the buffer contents have changed
-      vim.api.nvim_exec_autocmds("BufReadPost", {
-        buffer = bufnr,
-      })
+      -- NOTE the 'modified' flag is reset AFTER executing the BufReadPost
+      if is_autocmd then
+          vim.api.nvim_exec_autocmds("BufReadPost", {
+            buffer = bufnr,
+          })
+      end
     end)
   end)
 end
@@ -118,10 +120,6 @@ end
 ---@param opts table
 M.setup = function(opts)
   opts = opts or {}
-  -- vim.b.sops_auto_transform = false
-  -- vim.g.sops_auto_transform = false
-  vim.b.sops_auto_transform = true
-  vim.g.sops_auto_transform = true
 
   vim.api.nvim_create_user_command("SopsDecrypt", function()
     local bufnr = vim.api.nvim_get_current_buf()
