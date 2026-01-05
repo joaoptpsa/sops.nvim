@@ -12,4 +12,12 @@ M.is_sops_encrypted = function(bufnr)
   return string.find(content, SOPS_MARKER_BYTES, 1, true) ~= nil
 end
 
+---@return boolean
+M.is_auto_transform_enabled = function()
+  if vim.b.sops_auto_transform ~= nil then
+    return vim.b.sops_auto_transform
+  end
+  return vim.g.sops_auto_transform == true
+end
+
 return M

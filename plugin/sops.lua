@@ -22,7 +22,7 @@ vim.api.nvim_create_autocmd({
 }, {
   group = main_au_group,
   callback = function(ev)
-    if not require("sops.util").is_sops_encrypted(ev.buf) then
+    if not require("util").is_sops_encrypted(ev.buf) then
       return
     end
 
@@ -32,14 +32,14 @@ vim.api.nvim_create_autocmd({
       buffer = ev.buf,
       group = buf_au_group,
       callback = function()
-        if not require("sops.util").is_auto_transform_enabled() then
+        if not require("util").is_auto_transform_enabled() then
           return
         end
         require("sops").sops_encrypt_buffer(ev.buf, true)
         vim.api.nvim_set_option_value("modified", false, { buf = ev.buf })
       end,
     })
-    if not require("sops.util").is_auto_transform_enabled() then
+    if not require("util").is_auto_transform_enabled() then
       return
     end
 
