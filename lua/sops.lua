@@ -1,11 +1,9 @@
-local util = require("util")
-
 ---@class SopsModule
 local M = {}
 
 ---@param bufnr number
 ---@param is_autocmd boolean Enable acwrite for encrypting again with autocmds
-local function sops_decrypt_buffer(bufnr, is_autocmd)
+M.sops_decrypt_buffer = function(bufnr, is_autocmd)
   local path = vim.api.nvim_buf_get_name(bufnr)
   local cwd = vim.fs.dirname(path)
 
@@ -45,7 +43,7 @@ end
 
 ---@param bufnr number
 ---@param is_autocmd boolean Run this function for autocmd
-local function sops_encrypt_buffer(bufnr, is_autocmd)
+M.sops_encrypt_buffer = function(bufnr, is_autocmd)
   local path = vim.api.nvim_buf_get_name(bufnr)
   local cwd = vim.fs.dirname(path)
 
@@ -109,65 +107,10 @@ local function sops_encrypt_buffer(bufnr, is_autocmd)
   end)
 end
 
----@return boolean
-local is_auto_transform_enabled = function()
-  if vim.b.sops_auto_transform ~= nil then
-    return vim.b.sops_auto_transform
-  end
-  return vim.g.sops_auto_transform == true
-end
 
 ---@param opts table
 M.setup = function(opts)
   opts = opts or {}
-
-  vim.api.nvim_create_user_command("SopsDecrypt", function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    sops_decrypt_buffer(bufnr, false)
-  end, {
-    desc = "Decrypt the current file using SOPS",
-  })
-
-  vim.api.nvim_create_user_command("SopsEncrypt", function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    sops_encrypt_buffer(bufnr, false)
-  end, {
-    desc = "Encrypt the current file using SOPS",
-  })
-  local main_au_group = vim.api.nvim_create_augroup("sops.nvim", { clear = true })
-
-  vim.api.nvim_create_autocmd({
-    -- use BufWinEnter so it would fire when session was restored. This autocmd will be running more than once
-    "BufWinEnter",
-    "BufReadPost",
-    "FileReadPost",
-  }, {
-    group = main_au_group,
-    callback = function(ev)
-      if not util.is_sops_encrypted(ev.buf) then
-        return
-      end
-
-      local buf_au_group = vim.api.nvim_create_augroup("sops.nvim_" .. ev.buf, { clear = true })
-
-      vim.api.nvim_create_autocmd("BufWriteCmd", {
-        buffer = ev.buf,
-        group = buf_au_group,
-        callback = function()
-          if not is_auto_transform_enabled() then
-            return
-          end
-          sops_encrypt_buffer(ev.buf, true)
-          vim.api.nvim_set_option_value("modified", false, { buf = ev.buf })
-        end,
-      })
-      if not is_auto_transform_enabled() then
-        return
-      end
-
-      sops_decrypt_buffer(ev.buf, true)
-    end,
-  })
 end
 
 return M
