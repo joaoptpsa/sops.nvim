@@ -7,10 +7,12 @@ M.sops_decrypt_buffer = function(bufnr, is_autocmd)
   local path = vim.api.nvim_buf_get_name(bufnr)
   local cwd = vim.fs.dirname(path)
 
-  local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
+  local cmd = { "sops", "--decrypt" }
+  vim.list_extend(cmd, require("util").format_arguments(bufnr))
+  table.insert(cmd, path)
 
   vim.system(
-    { "sops", "--decrypt", "--input-type", filetype, "--output-type", filetype, path },
+    cmd,
     { cwd = cwd, text = true },
     function(out)
       vim.schedule(function()
@@ -71,11 +73,9 @@ M.sops_encrypt_buffer = function(bufnr, is_autocmd)
     return
   end
 
-  local cmd = {"sops", "encrypt", path}
-
-  if is_autocmd then
-    cmd = {"sops", "edit", path}
-  end
+  local cmd = { "sops", is_autocmd and "edit" or "encrypt" }
+  vim.list_extend(cmd, require("util").format_arguments(bufnr))
+  table.insert(cmd, path)
 
   vim.system(cmd, {
     cwd = cwd,

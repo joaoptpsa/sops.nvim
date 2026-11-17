@@ -8,6 +8,12 @@ saved.
 
 - YAML
 - JSON
+- dotenv
+- INI
+
+The store format comes from the file name with any `.sops` parts removed, so
+`secrets.sops.yaml`, `.env.sops` and `.sops.env` all work. Other names fall back
+to the buffer's filetype, then to SOPS's own detection.
 
 ## Requirements
 
