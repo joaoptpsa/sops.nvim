@@ -13,7 +13,10 @@ saved.
 
 The store format comes from the file name with any `.sops` parts removed, so
 `secrets.sops.yaml`, `.env.sops` and `.sops.env` all work. Other names fall back
-to the buffer's filetype, then to SOPS's own detection.
+to the buffer's filetype, then to SOPS's own detection. A file encrypted as a
+binary store (`sops encrypt --input-type binary`) opens as binary whatever its
+name says, except under a JSON name, where a JSON store holding only a `data`
+key looks the same.
 
 ## Requirements
 
